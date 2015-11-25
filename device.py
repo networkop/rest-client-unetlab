@@ -6,7 +6,7 @@ class Device(object):
     def __repr__(self):
         return "This is device " + self.name
 
-    def _to_json(self):
+    def to_json(self):
         return self.__dict__
 
 
@@ -31,6 +31,7 @@ class Router(Device):
 class Switch(Device):
     def __init__(self, name):
         super(Router, self).__init__(name)
+
 
 def main():
     d = Router('R1')
