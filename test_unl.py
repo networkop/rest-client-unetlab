@@ -1,5 +1,6 @@
 import unittest
 from unetlab import *
+from device import *
 
 USERNAME = "admin"
 PASSWORD = "unl"
@@ -39,14 +40,64 @@ class BasicUnlTests(UnlTests):
 class BasicUnlLabTest(UnlTests):
 
     def test_create_lab(self):
-        UnlLab().delete_lab(self.unl, LAB_NAME)
-        resp = UnlLab().create_lab(self.unl, LAB_NAME)
+        self.unl.delete_lab(LAB_NAME)
+        resp = self.unl.create_lab(LAB_NAME).resp
         self.assertEqual(200, resp.status_code)
 
     def test_delete_lab(self):
-        resp = UnlLab().delete_lab(self.unl, LAB_NAME)
+        self.unl.create_lab(LAB_NAME)
+        resp = self.unl.delete_lab(LAB_NAME)
         self.assertEqual(200, resp.status_code)
 
+
+class BasicUnlNodeTest(UnlTests):
+
+    def setUp(self):
+        super(BasicUnlNodeTest, self).setUp()
+        self.lab = self.unl.create_lab(LAB_NAME)
+        self.device = Router('R1')
+
+    def tearDown(self):
+        self.unl.delete_lab(LAB_NAME)
+        super(BasicUnlNodeTest, self).setUp()
+
+    def test_create_node(self):
+        resp = self.lab.create_node(self.device).resp
+        self.assertEqual(201, resp.status_code)
+
+    def test_delete_node(self):
+        self.lab.create_node(self.device)
+        resp = self.lab.delete_node(self.device)
+        self.assertEqual(200, resp.status_code)
+
+
+class AdvancedUnlNodeTest(BasicUnlNodeTest):
+
+    def test_connect_nodes(self):
+        pass
+
+    def test_start_nodes(self):
+        self.lab.stop_all_nodes()
+        resp = self.lab.start_all_nodes()
+        self.assertEqual(200, resp.status_code)
+
+    def test_stop_nodes(self):
+        self.lab.start_all_nodes()
+        resp = self.lab.stop_all_nodes()
+        self.assertEqual(200, resp.status_code)
+
+    def test_node_wipe(self):
+        pass
+
+    def test_node_import(self):
+        pass
+
+    def test_node_interfaces(self):
+        self.device = Router('R1')
+        dev = self.lab.create_node(self.device)
+        dev_id = dev.get_node_id()
+        resp = dev.get_interfaces(dev_id)
+        self.assertEqual(200, resp.status_code)
 
 def main():
     unittest.main()
