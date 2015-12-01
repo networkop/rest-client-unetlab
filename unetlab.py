@@ -13,9 +13,13 @@ REST_SCHEMA = {
     'create_lab': '/labs',
     'delete_lab': '/labs/{lab_name}',
     'create_node': '/labs/{lab_name}/nodes',
+    'create_net': '',
     'get_node': '/labs/{lab_name}/nodes',
+    'get_net': '',
     'delete_node': '/labs/{lab_name}/nodes/{node_id}',
+    'delete_net': '',
     'get_all_nodes': '/labs/{lab_name}/nodes',
+    'get_all_nets': '',
     'get_node_interfaces': '/labs/{lab_name}/nodes/{node_id}/interfaces',
     'start_all_nodes': '/labs/{lab_name}/nodes/start',
     'stop_all_nodes': '/labs/{lab_name}/nodes/stop',
@@ -82,6 +86,12 @@ class UnlLab(object):
         self.unl = unl
         self.resp = self.unl.add_object(api_call, data=payload)
 
+    def create_net(self, name):
+        net = UnlNet(name)
+        return net
+
+    def delete_net(self, name):
+        net_id = self.
     def create_node(self, device):
         node = UnlNode(self, device)
         return node
@@ -145,20 +155,17 @@ class UnlNode(object):
     def get_node_id(self):
         return self.lab.get_node_id_by_name(self.device.name)
 
-    def connect_interface(self, net_id):
+    def connect_interface(self, net):
         api_call = REST_SCHEMA['connect_interfaces']
         api_url = api_call.format(api_call, lab_name=append_unl(self.lab.name), node_id=self.get_node_id())
-        payload = {self.device.get_next_interface() : net_id}
+        payload = {self.device.get_next_interface() : net.get_node_id()}
         resp = self.unl.update_object(api_url, data=payload)
         return resp
 
     def connect_node(self, other):
-        self.add_net(name=net_name)
-        net_id = self.get_net_by_name(net_name)
-        node1_id = self.get_node_by_name(node1)
-        node2_id = self.get_node_by_name(node2)
-        resp1 = self.connect_interface(node1_id, net_id)
-        resp2 = self.connect_interface(node2_id, net_id)
+        net = self.add_net(name='_'.join(self.device.name, other.device.name))
+        resp1 = self.connect_interface(self, net)
+        resp2 = self.connect_interface(other, net)
         return resp1, resp2
 
 

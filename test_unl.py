@@ -8,6 +8,7 @@ UNETLAB_ADDRESS = '192.168.247.20'
 LAB_NAME = 'test_rest'
 
 
+
 class UnlTests(unittest.TestCase):
 
     def setUp(self):
@@ -70,11 +71,32 @@ class BasicUnlNodeTest(UnlTests):
         resp = self.lab.delete_node(self.device)
         self.assertEqual(200, resp.status_code)
 
+    def test_create_net(self):
+        resp = self.lab.create_net("DUMMY_NET")
+        self.assertEqual(200, resp.status_code)
+
+    def test_delete_net(self):
+        self.lab.create_net("DUMMY_NET")
+        resp = self.lab.delete_net("DUMMY_NET")
+        self.assertEqual(200, resp.status_code)
 
 class AdvancedUnlNodeTest(BasicUnlNodeTest):
 
+    def setUp(self):
+        super(BasicUnlNodeTest, self).setUp()
+        self.lab = self.unl.create_lab(LAB_NAME)
+        self.device_one = Router('R1')
+        self.device_two = Router('R2')
+
+    def tearDown(self):
+        self.unl.delete_lab(LAB_NAME)
+        super(BasicUnlNodeTest, self).setUp()
+
     def test_connect_nodes(self):
-        pass
+        node_one = self.lab.create_node(self.device_one)
+        node_two = self.lab.create_node(self.device_two)
+        resp = node_one.connect_node(node_two)
+        self.assertEqual(200, resp.status_code)
 
     def test_start_nodes(self):
         self.lab.stop_all_nodes()
