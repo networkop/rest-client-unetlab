@@ -72,18 +72,19 @@ class BasicUnlNodeTest(UnlTests):
         self.assertEqual(200, resp.status_code)
 
     def test_create_net(self):
-        resp = self.lab.create_net("DUMMY_NET")
-        self.assertEqual(200, resp.status_code)
+        resp = self.lab.create_net("DUMMY_NET").resp
+        self.assertEqual(201, resp.status_code)
 
     def test_delete_net(self):
         self.lab.create_net("DUMMY_NET")
         resp = self.lab.delete_net("DUMMY_NET")
         self.assertEqual(200, resp.status_code)
 
+
 class AdvancedUnlNodeTest(BasicUnlNodeTest):
 
     def setUp(self):
-        super(BasicUnlNodeTest, self).setUp()
+        super(AdvancedUnlNodeTest, self).setUp()
         self.lab = self.unl.create_lab(LAB_NAME)
         self.device_one = Router('R1')
         self.device_two = Router('R2')
@@ -95,8 +96,8 @@ class AdvancedUnlNodeTest(BasicUnlNodeTest):
     def test_connect_nodes(self):
         node_one = self.lab.create_node(self.device_one)
         node_two = self.lab.create_node(self.device_two)
-        resp = node_one.connect_node(node_two)
-        self.assertEqual(200, resp.status_code)
+        resp1, resp2 = node_one.connect_node(node_two)
+        self.assertEqual(201, resp1.status_code) and self.assertEqual(201, resp2.status_code)
 
     def test_start_nodes(self):
         self.lab.stop_all_nodes()
@@ -120,6 +121,7 @@ class AdvancedUnlNodeTest(BasicUnlNodeTest):
         dev_id = dev.get_node_id()
         resp = dev.get_interfaces(dev_id)
         self.assertEqual(200, resp.status_code)
+
 
 def main():
     unittest.main()

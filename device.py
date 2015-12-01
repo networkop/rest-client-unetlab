@@ -27,11 +27,17 @@ class Router(Device):
         for key, value in Router.defaults.items():
             setattr(self, key, value)
         super(Router, self).__init__(name)
+        self.offset = 0
+        self.index = 0
 
     def get_next_interface(self):
-        for i in range():
-            for index in Router.intf_list:
-                yield index+i
+        result = self.offset + Router.intf_list[self.index]
+        self.offset += 1
+        self.index += 1
+        if self.index > 3:
+            self.index = 0
+            self.offset += 1
+        return result
 
 
 class Switch(Device):

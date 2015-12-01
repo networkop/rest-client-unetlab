@@ -13,13 +13,11 @@ REST_SCHEMA = {
     'create_lab': '/labs',
     'delete_lab': '/labs/{lab_name}',
     'create_node': '/labs/{lab_name}/nodes',
-    'create_net': '',
-    'get_node': '/labs/{lab_name}/nodes',
-    'get_net': '',
+    'create_net': '/labs/{lab_name}/networks',
     'delete_node': '/labs/{lab_name}/nodes/{node_id}',
-    'delete_net': '',
+    'delete_net': '/labs/{lab_name}/networks/{net_id}',
     'get_all_nodes': '/labs/{lab_name}/nodes',
-    'get_all_nets': '',
+    'get_all_nets': '/labs/{lab_name}/networks',
     'get_node_interfaces': '/labs/{lab_name}/nodes/{node_id}/interfaces',
     'start_all_nodes': '/labs/{lab_name}/nodes/start',
     'stop_all_nodes': '/labs/{lab_name}/nodes/stop',
@@ -87,11 +85,16 @@ class UnlLab(object):
         self.resp = self.unl.add_object(api_call, data=payload)
 
     def create_net(self, name):
-        net = UnlNet(name)
+        net = UnlNet(self, name)
         return net
 
     def delete_net(self, name):
-        net_id = self.
+        net_id = self.get_net_id_by_name(name)
+        api_call = REST_SCHEMA['delete_net']
+        api_url = api_call.format(api_call, lab_name=append_unl(self.name), net_id=net_id)
+        resp = self.unl.del_object(api_url)
+        return resp
+
     def create_node(self, device):
         node = UnlNode(self, device)
         return node
@@ -109,17 +112,30 @@ class UnlLab(object):
         resp = self.unl.get_object(api_url)
         return resp
 
+    def get_nets(self):
+        api_call = REST_SCHEMA['get_all_nets']
+        api_url = api_call.format(api_call, lab_name=append_unl(self.name))
+        resp = self.unl.get_object(api_url)
+        return resp
+
     def get_node_id_by_name(self, node_name):
         node_dict = json.loads(self.get_nodes().content)['data']
-        for node_id in node_dict:
-            if node_dict[node_id]["name"] == node_name:
-                return node_id
-        return None
+        return get_id_by_name(node_dict, node_name)
+
+    def get_net_id_by_name(self, net_name):
+        net_dict = json.loads(self.get_nets().content)['data']
+        return get_id_by_name(net_dict, net_name)
 
     def del_all_nodes(self):
         node_dict = json.loads(self.get_nodes().content)['data']
         for node_id in node_dict:
             self.delete_node(node_id)
+        return None
+
+    def del_all_nets(self):
+        nets_dict = json.loads(self.get_nets().content)['data']
+        for node_id in nets_dict:
+            self.delete_net(node_id)
         return None
 
     def start_all_nodes(self):
@@ -158,52 +174,32 @@ class UnlNode(object):
     def connect_interface(self, net):
         api_call = REST_SCHEMA['connect_interfaces']
         api_url = api_call.format(api_call, lab_name=append_unl(self.lab.name), node_id=self.get_node_id())
-        payload = {self.device.get_next_interface() : net.get_node_id()}
+        payload = {str(self.device.get_next_interface()): net.get_net_id()}
         resp = self.unl.update_object(api_url, data=payload)
         return resp
 
     def connect_node(self, other):
-        net = self.add_net(name='_'.join(self.device.name, other.device.name))
-        resp1 = self.connect_interface(self, net)
-        resp2 = self.connect_interface(other, net)
+        net = self.lab.create_net(name='_'.join([self.device.name, other.device.name]))
+        resp1 = self.connect_interface(net)
+        resp2 = other.connect_interface(net)
         return resp1, resp2
 
 
 class UnlNet(object):
 
-    def add_net(self, type='bridge', name = 'NET'):
-        api_call = '/labs/{lab_name}/networks'
+    def __init__(self, lab, name):
+        api_call = REST_SCHEMA['create_net']
+        self.unl = lab.unl
+        self.lab = lab
+        self.name = name
         payload = dict()
-        payload['type'] = type
-        payload['name'] = name
-        api_url = api_call.format(api_call, lab_name=append_unl(LAB_NAME))
-        resp = self.unl.add_object(api_url, data=payload)
-        return resp
+        payload['type'] = 'bridge'
+        payload['name'] = self.name
+        api_url = api_call.format(api_call, lab_name=append_unl(self.lab.name))
+        self.resp = self.unl.add_object(api_url, data=payload)
 
-    def get_nets(self):
-        api_call = '/labs/{lab_name}/networks'
-        api_url = api_call.format(api_call, lab_name=append_unl(LAB_NAME))
-        resp = self.server.get_object(api_url)
-        return resp
-
-    def get_net_by_name(self, net_name):
-        nets_dict = json.loads(self.get_nets().content)['data']
-        for net_id in nets_dict:
-            if nets_dict[net_id]["name"] == net_name:
-                return net_id
-        return None
-
-    def del_net(self, net_id):
-        api_call = '/labs/{lab_name}/networks/{net_id}'
-        api_url = api_call.format(api_call, lab_name=append_unl(LAB_NAME), net_id=net_id)
-        resp = self.server.del_object(api_url)
-        return resp
-
-    def del_all_nets(self):
-        nets_dict = json.loads(self.get_nets().content)['data']
-        for node_id in nets_dict:
-            self.del_net(node_id)
-        return
+    def get_net_id(self):
+        return self.lab.get_net_id_by_name(self.name)
 
 
 def main():
