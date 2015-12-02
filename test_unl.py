@@ -6,6 +6,7 @@ USERNAME = "admin"
 PASSWORD = "unl"
 UNETLAB_ADDRESS = '192.168.247.20'
 LAB_NAME = 'test_rest'
+CONFIG = 'hostname CHANGED'
 
 
 
@@ -56,7 +57,7 @@ class BasicUnlNodeTest(UnlTests):
     def setUp(self):
         super(BasicUnlNodeTest, self).setUp()
         self.lab = self.unl.create_lab(LAB_NAME)
-        self.device = Router('R1')
+        self.device = Router('R0')
 
     def tearDown(self):
         self.unl.delete_lab(LAB_NAME)
@@ -78,6 +79,11 @@ class BasicUnlNodeTest(UnlTests):
     def test_delete_net(self):
         self.lab.create_net("DUMMY_NET")
         resp = self.lab.delete_net("DUMMY_NET")
+        self.assertEqual(200, resp.status_code)
+
+    def test_node_config(self):
+        node = self.lab.create_node(self.device)
+        resp = node.get_config()
         self.assertEqual(200, resp.status_code)
 
 
@@ -113,13 +119,17 @@ class AdvancedUnlNodeTest(BasicUnlNodeTest):
         pass
 
     def test_node_import(self):
+        node = self.lab.create_node(self.device)
+        self.lab.start_all_nodes()
+        node_url = node.get_url()
+        self.device.set_url(node_url)
+        self.device.set_config(CONFIG)
         pass
 
     def test_node_interfaces(self):
         self.device = Router('R1')
         dev = self.lab.create_node(self.device)
-        dev_id = dev.get_node_id()
-        resp = dev.get_interfaces(dev_id)
+        resp = dev.get_interfaces()
         self.assertEqual(200, resp.status_code)
 
 

@@ -1,3 +1,6 @@
+import telnetlib
+from helpers import *
+
 
 class Device(object):
     def __init__(self, name):
@@ -29,6 +32,7 @@ class Router(Device):
         super(Router, self).__init__(name)
         self.offset = 0
         self.index = 0
+        self.url_ip, self.url_port = '', ''
 
     def get_next_interface(self):
         result = self.offset + Router.intf_list[self.index]
@@ -39,6 +43,18 @@ class Router(Device):
             self.offset += 1
         return result
 
+    def set_url(self, url):
+        self.url_ip, self.url_port = str(url).strip('telnet://').split(':')
+        return None
+
+    def set_config(self, config):
+        session = telnetlib.Telnet(self.url_ip, self.url_port)
+        session.write(wrap_config(config))
+        result = session.read_very_eager()
+        session.close
+
+        print result
+        return result
 
 class Switch(Device):
     def __init__(self, name):

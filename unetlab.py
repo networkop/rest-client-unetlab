@@ -14,6 +14,7 @@ REST_SCHEMA = {
     'delete_lab': '/labs/{lab_name}',
     'create_node': '/labs/{lab_name}/nodes',
     'create_net': '/labs/{lab_name}/networks',
+    'get_node': '/labs/{lab_name}/nodes/{node_id}',
     'delete_node': '/labs/{lab_name}/nodes/{node_id}',
     'delete_net': '/labs/{lab_name}/networks/{net_id}',
     'get_all_nodes': '/labs/{lab_name}/nodes',
@@ -162,14 +163,20 @@ class UnlNode(object):
         payload = self.device.to_json()
         self.resp = self.unl.add_object(api_url, data=payload)
 
-    def get_interfaces(self, node_id):
+    def get_interfaces(self):
         api_call = REST_SCHEMA['get_node_interfaces']
-        api_url = api_call.format(api_call, lab_name=append_unl(self.lab.name), node_id=node_id)
+        api_url = api_call.format(api_call, lab_name=append_unl(self.lab.name), node_id=self.get_node_id())
         resp = self.unl.get_object(api_url)
         return resp
 
     def get_node_id(self):
         return self.lab.get_node_id_by_name(self.device.name)
+
+    def get_config(self):
+        api_call = REST_SCHEMA['get_node']
+        api_url = api_call.format(api_call, lab_name=append_unl(self.lab.name), node_id=self.get_node_id())
+        resp = self.unl.get_object(api_url)
+        return resp
 
     def connect_interface(self, net):
         api_call = REST_SCHEMA['connect_interfaces']
@@ -183,6 +190,9 @@ class UnlNode(object):
         resp1 = self.connect_interface(net)
         resp2 = other.connect_interface(net)
         return resp1, resp2
+
+    def get_url(self):
+        return json.loads(self.get_config().content)['data']['url']
 
 
 class UnlNet(object):
