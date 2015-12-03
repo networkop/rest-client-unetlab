@@ -12,4 +12,4 @@ def get_id_by_name(node_dict, node_name):
 
 
 def wrap_config(text):
-    return '\n no \n enable \n conf t \n' + text + '\n write \n' + 'show run | i hostname \n'
+    return '\n no \nenable \nconf t \n' + text + '\nexit \n\rwrite \n' + 'show run | i hostname \n'

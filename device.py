@@ -32,7 +32,7 @@ class Router(Device):
         super(Router, self).__init__(name)
         self.offset = 0
         self.index = 0
-        self.url_ip, self.url_port = '', ''
+        self.url_ip, self.url_port = '',''
 
     def get_next_interface(self):
         result = self.offset + Router.intf_list[self.index]
@@ -49,12 +49,13 @@ class Router(Device):
 
     def set_config(self, config):
         session = telnetlib.Telnet(self.url_ip, self.url_port)
-        session.write(wrap_config(config))
-        result = session.read_very_eager()
-        session.close
-
+        session.write('\r\n')
+        session.read_until('>')
+        session.sendline(wrap_config(config))
+        result = session.read_until('#')
         print result
         return result
+
 
 class Switch(Device):
     def __init__(self, name):

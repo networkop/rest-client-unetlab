@@ -107,6 +107,8 @@ class AdvancedUnlNodeTest(BasicUnlNodeTest):
 
     def test_start_nodes(self):
         self.lab.stop_all_nodes()
+        self.lab.create_node(self.device_one)
+        self.lab.create_node(self.device_two)
         resp = self.lab.start_all_nodes()
         self.assertEqual(200, resp.status_code)
 
@@ -120,10 +122,10 @@ class AdvancedUnlNodeTest(BasicUnlNodeTest):
 
     def test_node_import(self):
         node = self.lab.create_node(self.device)
-        self.lab.start_all_nodes()
+        started = self.lab.start_all_nodes()
         node_url = node.get_url()
         self.device.set_url(node_url)
-        self.device.set_config(CONFIG)
+        #self.device.set_config(CONFIG)
         pass
 
     def test_node_interfaces(self):
