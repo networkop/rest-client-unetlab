@@ -6,7 +6,9 @@ USERNAME = "admin"
 PASSWORD = "unl"
 UNETLAB_ADDRESS = '192.168.247.20'
 LAB_NAME = 'test_rest'
-CONFIG = 'hostname CHANGED'
+HOSTNAME = '123'
+SET_COMMAND = 'conf t\r\nhostname ' + HOSTNAME
+VERIFY_COMMAND = 'show run | i hostname'
 
 
 
@@ -107,8 +109,6 @@ class AdvancedUnlNodeTest(BasicUnlNodeTest):
 
     def test_start_nodes(self):
         self.lab.stop_all_nodes()
-        self.lab.create_node(self.device_one)
-        self.lab.create_node(self.device_two)
         resp = self.lab.start_all_nodes()
         self.assertEqual(200, resp.status_code)
 
@@ -122,11 +122,11 @@ class AdvancedUnlNodeTest(BasicUnlNodeTest):
 
     def test_node_import(self):
         node = self.lab.create_node(self.device)
-        started = self.lab.start_all_nodes()
-        node_url = node.get_url()
-        self.device.set_url(node_url)
-        #self.device.set_config(CONFIG)
-        pass
+        self.lab.start_all_nodes()
+        self.device.set_url(node.get_url())
+        self.device.set_config(SET_COMMAND)
+        result = self.device.verify_config(VERIFY_COMMAND)
+        self.assertRegexpMatches(result, HOSTNAME)
 
     def test_node_interfaces(self):
         self.device = Router('R1')

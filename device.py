@@ -1,4 +1,5 @@
 import telnetlib
+import time
 from helpers import *
 
 
@@ -7,7 +8,7 @@ class Device(object):
         self.name = name
 
     def __repr__(self):
-        return "This is device " + self.name
+        return type(self).__name__ + '(' + self.name + ')'
 
     def to_json(self):
         return self.__dict__
@@ -32,7 +33,7 @@ class Router(Device):
         super(Router, self).__init__(name)
         self.offset = 0
         self.index = 0
-        self.url_ip, self.url_port = '',''
+        self.url_ip, self.url_port = '', ''
 
     def get_next_interface(self):
         result = self.offset + Router.intf_list[self.index]
@@ -47,13 +48,26 @@ class Router(Device):
         self.url_ip, self.url_port = str(url).strip('telnet://').split(':')
         return None
 
+    def __wait_vty(self, session, timeout=2):
+        time.sleep(timeout)
+        return session.read_very_eager()
+
     def set_config(self, config):
         session = telnetlib.Telnet(self.url_ip, self.url_port)
-        session.write('\r\n')
-        session.read_until('>')
-        session.sendline(wrap_config(config))
-        result = session.read_until('#')
-        print result
+        self.__wait_vty(session)
+        session.read_until('>', 2)
+        session.write(wrap_command(config))
+        result = self.__wait_vty(session)
+        session.close()
+        return result
+
+    def verify_config(self, text):
+        session = telnetlib.Telnet(self.url_ip, self.url_port)
+        self.__wait_vty(session)
+        session.read_until('>', 2)
+        session.write(wrap_command(text))
+        result = self.__wait_vty(session)
+        session.close()
         return result
 
 
