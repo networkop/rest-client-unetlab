@@ -1,6 +1,7 @@
 import unittest
 from unetlab import *
 from device import *
+import time
 
 USERNAME = "admin"
 PASSWORD = "unl"
@@ -93,7 +94,6 @@ class AdvancedUnlNodeTest(BasicUnlNodeTest):
 
     def setUp(self):
         super(AdvancedUnlNodeTest, self).setUp()
-        self.lab = self.unl.create_lab(LAB_NAME)
         self.device_one = Router('R1')
         self.device_two = Router('R2')
 
@@ -108,7 +108,8 @@ class AdvancedUnlNodeTest(BasicUnlNodeTest):
         self.assertEqual(201, resp1.status_code) and self.assertEqual(201, resp2.status_code)
 
     def test_start_nodes(self):
-        self.lab.stop_all_nodes()
+        self.lab.create_node(self.device_one)
+        self.lab.create_node(self.device_two)
         resp = self.lab.start_all_nodes()
         self.assertEqual(200, resp.status_code)
 
@@ -122,7 +123,7 @@ class AdvancedUnlNodeTest(BasicUnlNodeTest):
 
     def test_node_import(self):
         node = self.lab.create_node(self.device)
-        self.lab.start_all_nodes()
+        resp = self.lab.start_all_nodes()
         self.device.set_url(node.get_url())
         self.device.set_config(SET_COMMAND)
         result = self.device.verify_config(VERIFY_COMMAND)
