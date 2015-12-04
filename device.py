@@ -50,19 +50,19 @@ class Router(Device):
 
     def __wait_vty(self, session, stop_char='>'):
         result = ' ' + session.read_very_eager()
-        while not result[-1] == stop_char:
-            session.write('\r\n')
+        while stop_char not in result[-10:]:
+            session.write('\n')
             result += session.read_very_eager()
             time.sleep(0.1)
         return result
 
     def set_config(self, config):
         session = telnetlib.Telnet(self.url_ip, self.url_port)
-        temp = self.__wait_vty(session)
+        temp = self.__wait_vty(session, stop_char='#')
         print 'BEFORE CONFIG \n' + temp
         t = wrap_command(config)
         session.write(t)
-        temp = self.__wait_vty(session)
+        temp = self.__wait_vty(session, stop_char='#')
         print 'AFTER CONFIG \n' + temp
         session.close()
         return None
