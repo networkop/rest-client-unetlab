@@ -1,16 +1,14 @@
 import unittest
 from unetlab import *
 from device import *
-import time
 
 USERNAME = "admin"
 PASSWORD = "unl"
 UNETLAB_ADDRESS = '192.168.247.20'
 LAB_NAME = 'test_rest'
-HOSTNAME = '123'
+HOSTNAME = 'QWEASD'
 SET_COMMAND = 'conf t\r\nhostname ' + HOSTNAME
 VERIFY_COMMAND = 'show run | i hostname'
-
 
 
 class UnlTests(unittest.TestCase):
