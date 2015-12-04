@@ -89,8 +89,7 @@ class UnlLab(object):
         net = UnlNet(self, name)
         return net
 
-    def delete_net(self, name):
-        net_id = self.get_net_id_by_name(name)
+    def delete_net(self, net_id):
         api_call = REST_SCHEMA['delete_net']
         api_url = api_call.format(api_call, lab_name=append_unl(self.name), net_id=net_id)
         resp = self.unl.del_object(api_url)
@@ -100,8 +99,7 @@ class UnlLab(object):
         node = UnlNode(self, device)
         return node
 
-    def delete_node(self, device):
-        node_id = self.get_node_id_by_name(device.name)
+    def delete_node(self, node_id):
         api_call = REST_SCHEMA['delete_node']
         api_url = api_call.format(api_call, lab_name=append_unl(self.name), node_id=node_id)
         resp = self.unl.del_object(api_url)

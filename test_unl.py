@@ -63,8 +63,10 @@ class BasicUnlNodeTest(UnlTests):
         self.device = Router('R0')
 
     def tearDown(self):
+        self.lab.stop_all_nodes()
+        self.lab.del_all_nodes()
         self.unl.delete_lab(LAB_NAME)
-        super(BasicUnlNodeTest, self).setUp()
+        super(BasicUnlNodeTest, self).tearDown()
 
     def test_create_node(self):
         resp = self.lab.create_node(self.device).resp
@@ -72,7 +74,7 @@ class BasicUnlNodeTest(UnlTests):
 
     def test_delete_node(self):
         self.lab.create_node(self.device)
-        resp = self.lab.delete_node(self.device)
+        resp = self.lab.delete_node(self.lab.get_node_id_by_name(self.device.name))
         self.assertEqual(200, resp.status_code)
 
     def test_create_net(self):
@@ -81,7 +83,7 @@ class BasicUnlNodeTest(UnlTests):
 
     def test_delete_net(self):
         self.lab.create_net("DUMMY_NET")
-        resp = self.lab.delete_net("DUMMY_NET")
+        resp = self.lab.delete_net(self.lab.get_net_id_by_name("DUMMY_NET"))
         self.assertEqual(200, resp.status_code)
 
     def test_node_config(self):
@@ -98,8 +100,7 @@ class AdvancedUnlNodeTest(BasicUnlNodeTest):
         self.device_two = Router('R2')
 
     def tearDown(self):
-        self.unl.delete_lab(LAB_NAME)
-        super(BasicUnlNodeTest, self).setUp()
+        super(AdvancedUnlNodeTest, self).tearDown()
 
     def test_connect_nodes(self):
         node_one = self.lab.create_node(self.device_one)
@@ -121,6 +122,7 @@ class AdvancedUnlNodeTest(BasicUnlNodeTest):
     def test_node_wipe(self):
         pass
 
+    #@unittest.skip("troubleshooting node start/stop")
     def test_node_import(self):
         node = self.lab.create_node(self.device)
         resp = self.lab.start_all_nodes()

@@ -48,25 +48,32 @@ class Router(Device):
         self.url_ip, self.url_port = str(url).strip('telnet://').split(':')
         return None
 
-    def __wait_vty(self, session, timeout=2):
-        time.sleep(timeout)
-        return session.read_very_eager()
+    def __wait_vty(self, session, stop_char='>'):
+        result = ' ' + session.read_very_eager()
+        while not result[-1] == stop_char:
+            session.write('\r\n')
+            result += session.read_very_eager()
+            time.sleep(0.1)
+        return result
 
     def set_config(self, config):
         session = telnetlib.Telnet(self.url_ip, self.url_port)
-        self.__wait_vty(session)
-        session.read_until('>', 2)
-        session.write(wrap_command(config))
-        result = self.__wait_vty(session)
+        temp = self.__wait_vty(session)
+        print 'BEFORE CONFIG \n' + temp
+        t = wrap_command(config)
+        session.write(t)
+        temp = self.__wait_vty(session)
+        print 'AFTER CONFIG \n' + temp
         session.close()
-        return result
+        return None
 
     def verify_config(self, text):
         session = telnetlib.Telnet(self.url_ip, self.url_port)
-        self.__wait_vty(session)
-        session.read_until('>', 2)
+        temp = self.__wait_vty(session)
+        print 'BEFORE VERIFY \n' + temp
         session.write(wrap_command(text))
-        result = self.__wait_vty(session)
+        result = self.__wait_vty(session, stop_char='#')
+        print "VERIFYING \n" + result
         session.close()
         return result
 
