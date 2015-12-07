@@ -8,6 +8,12 @@ class RestServer(object):
     def __init__(self, address):
         self.cookies = None
         self.base_url = '/'.join(['http:/', address, BASE_URL])
+        self.user, self.pwd = '', ''
+
+    def set_creds(self, user, pwd):
+        self.user = user
+        self.pwd = pwd
+        return None
 
     def _send_request(self, method, path, data=None):
         response = None
@@ -15,7 +21,9 @@ class RestServer(object):
         try:
             response = requests.request(method, url,  json=data, cookies=self.cookies)
         except requests.exceptions.RequestException as e:
-            print('Error calling %s: %s', url, e.message)
+            print('*** Error calling %s: %s', url, e.message)
+        if 400 <= response.status_code <= 499:
+            self._do_authenticate(self.user, self.pwd)
         return response
 
     def set_cookies(self, cookie):

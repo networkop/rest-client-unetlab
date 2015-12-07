@@ -57,12 +57,13 @@ class BasicUnlNodeTest(UnlTests):
 
     def setUp(self):
         super(BasicUnlNodeTest, self).setUp()
+        self.unl.delete_lab(LAB_NAME)
         self.lab = self.unl.create_lab(LAB_NAME)
+        self.lab.cleanup()
         self.device = Router('R0')
 
     def tearDown(self):
-        self.lab.stop_all_nodes()
-        self.lab.del_all_nodes()
+        self.lab.cleanup()
         self.unl.delete_lab(LAB_NAME)
         super(BasicUnlNodeTest, self).tearDown()
 

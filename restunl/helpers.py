@@ -17,3 +17,4 @@ def wrap_command(text):
 def read_file(filename):
     with open(filename) as f:
         return ''.join(f.readlines())
+

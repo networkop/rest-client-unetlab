@@ -31,6 +31,10 @@ class UnetLab(RestServer):
         super(UnetLab, self).__init__(address)
 
     def authenticate(self, user, pwd):
+        self.set_creds(user, pwd)
+        return self._do_authenticate(user, pwd)
+
+    def _do_authenticate(self, user, pwd):
         api_call = REST_SCHEMA['authenticate']
         payload = {
             "username": user,
@@ -159,6 +163,11 @@ class UnlLab(object):
         api_url = api_call.format(api_call, lab_name=append_unl(self.name))
         resp = self.unl.get_object(api_url)
         return resp
+
+    def cleanup(self):
+        self.stop_all_nodes()
+        self.del_all_nodes()
+        return None
 
 
 class UnlNode(object):
