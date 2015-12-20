@@ -22,7 +22,7 @@ class RestServer(object):
             response = requests.request(method, url,  json=data, cookies=self.cookies)
         except requests.exceptions.RequestException as e:
             print('*** Error calling %s: %s', url, e.message)
-        if 400 <= response.status_code <= 499:
+        if self.cookies and 400 <= response.status_code <= 499:
             self._do_authenticate(self.user, self.pwd)
         return response
 
