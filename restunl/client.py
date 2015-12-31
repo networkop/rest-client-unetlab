@@ -15,6 +15,9 @@ class RestServer(object):
         self.pwd = pwd
         return None
 
+    def _do_authenticate(self):
+        raise NotImplementedError
+
     def _send_request(self, method, path, data=None):
         response = None
         url = self.base_url + path
